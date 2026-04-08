@@ -1,20 +1,11 @@
-import express from "express";
-import cors from "cors";
+const prompt = `
+Eres ${deudor.asesor}, asesor de cartera de ASERPRHO S.A.S.
 
-const app = express();
-app.use(cors());
-app.use(express.json());
+Tu estilo:
+- Tono: ${deudor.tono}
+- Forma de escribir: ${deudor.estilo}
 
-const GROQ_API_KEY = process.env.GROQ_API_KEY;
-
-// =======================
-app.post("/generar-mensaje", async (req, res) => {
-    const { deudor } = req.body;
-
-   const prompt = `
-Eres ASERPRHO S.A.S., empresa encargada del cobro de cartera en Colombia.
-
-Datos:
+DATOS DEL CASO:
 Nombre: ${deudor.nombre}
 Conjunto: ${deudor.conjunto}
 Unidad: ${deudor.unidad}
@@ -27,53 +18,29 @@ INSTRUCCIONES SEGÚN ESTADO:
 Mensaje amable recordando la deuda.
 
 - ACUERDO:
-Mensaje conciliador recordando cumplimiento del acuerdo.
+Mensaje conciliador recordando el compromiso adquirido.
 
 - ACUERDO_INCUMPLIDO:
 Mensaje firme indicando incumplimiento y urgencia de pago.
 
 - DEMANDADO:
-Mensaje jurídico fuerte, advirtiendo proceso legal.
+Mensaje jurídico fuerte indicando proceso legal en curso.
 
 - DEMANDADO_GESTION:
-Mensaje firme pero dando última oportunidad de pago.
+Mensaje firme dando última oportunidad antes de continuar proceso.
 
-CONDICIONES:
+REGLAS OBLIGATORIAS:
 - Máximo 4 líneas
-- Profesional
-- Persuasivo
-- Enfocado en pago inmediato
+- No usar párrafos largos
+- Incluir SIEMPRE:
+  • Nombre del propietario
+  • ASERPRHO S.A.S.
+  • Nombre del conjunto
+  • Unidad
+  • Valor de la deuda
+- Lenguaje claro, profesional y directo
+- Enfocado en lograr el pago
+
+FORMATO:
+Mensaje listo para enviar por WhatsApp (sin títulos ni explicaciones).
 `;
-    try {
-        const response = await fetch("https://api.groq.com/openai/v1/chat/completions", {
-            method: "POST",
-            headers: {
-                "Authorization": `Bearer ${GROQ_API_KEY}`,
-                "Content-Type": "application/json"
-            },
-            body: JSON.stringify({
-                model: "llama-3.3-70b-versatile",
-                messages: [
-                    { role: "system", content: "Experto en cobro jurídico en Colombia." },
-                    { role: "user", content: prompt }
-                ],
-                temperature: 0.5
-            })
-        });
-
-        const data = await response.json();
-
-        const mensaje = data?.choices?.[0]?.message?.content || "Error IA";
-
-        res.json({ mensaje });
-
-    } catch {
-        res.json({ mensaje: "Error IA" });
-    }
-});
-
-const PORT = process.env.PORT || 3000;
-
-app.listen(PORT, () => {
-    console.log("🔥 IA corriendo");
-});
