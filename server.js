@@ -35,7 +35,7 @@ Estado: ${deudor.estado}
 INSTRUCCIONES:
 
 - GESTION: mensaje amable
-- ACUERDO: mensaje conciliador
+- ACUERDO DE PAGO: mensaje recordatorio de la cuota.
 - ACUERDO_INCUMPLIDO: mensaje firme
 - DEMANDADO: mensaje jurídico
 - DEMANDADO_GESTION: mensaje previo a legal
