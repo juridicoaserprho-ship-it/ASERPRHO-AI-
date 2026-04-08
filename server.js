@@ -8,11 +8,20 @@ app.use(express.json());
 // 🔐 API KEY DESDE RENDER
 const GROQ_API_KEY = process.env.GROQ_API_KEY;
 
+// DEBUG (TEMPORAL)
+console.log("🔑 API KEY:", GROQ_API_KEY ? "CARGADA ✅" : "NO EXISTE ❌");
+
 // =======================
 // ENDPOINT IA (GROQ)
 // =======================
 app.post("/generar-mensaje", async (req, res) => {
     const { deudor } = req.body;
+
+    if (!GROQ_API_KEY) {
+        return res.json({
+            mensaje: "❌ API KEY no configurada"
+        });
+    }
 
     const prompt = `
 Genera mensaje de cobro para WhatsApp:
@@ -36,7 +45,7 @@ Condiciones:
                 "Content-Type": "application/json"
             },
             body: JSON.stringify({
-                model: "llama-3.3-70b-versatile", // 🔥 TU MODELO
+                model: "llama-3.3-70b-versatile",
                 messages: [
                     {
                         role: "system",
@@ -79,5 +88,5 @@ Condiciones:
 const PORT = process.env.PORT || 3000;
 
 app.listen(PORT, () => {
-    console.log("🔥 IA GROQ corriendo");
+    console.log("🔥 IA GROQ corriendo en puerto", PORT);
 });
