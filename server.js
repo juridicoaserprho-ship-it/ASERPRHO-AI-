@@ -5,36 +5,27 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-// 🔐 API KEY DESDE RENDER
 const GROQ_API_KEY = process.env.GROQ_API_KEY;
 
-// DEBUG (TEMPORAL)
-console.log("🔑 API KEY:", GROQ_API_KEY ? "CARGADA ✅" : "NO EXISTE ❌");
-
-// =======================
-// ENDPOINT IA (GROQ)
 // =======================
 app.post("/generar-mensaje", async (req, res) => {
     const { deudor } = req.body;
 
-    if (!GROQ_API_KEY) {
-        return res.json({
-            mensaje: "❌ API KEY no configurada"
-        });
-    }
-
     const prompt = `
-Genera mensaje de cobro para WhatsApp:
+Redacta un mensaje de cobro para WhatsApp en Colombia.
 
+Somos ASERPRHO S.A.S., empresa encargada del cobro de cartera.
+
+Datos:
+Conjunto: ${deudor.conjunto}
 Unidad: ${deudor.unidad}
+Propietario: ${deudor.propietario}
 Deuda: $${deudor.deuda}
-Estado: ${deudor.estado}
 
 Condiciones:
+- Tono humano, respetuoso pero firme
 - Máximo 4 líneas
-- Profesional
-- Persuasivo
-- Enfocado en pago
+- Incluir invitación a pago o acuerdo
 `;
 
     try {
@@ -47,14 +38,8 @@ Condiciones:
             body: JSON.stringify({
                 model: "llama-3.3-70b-versatile",
                 messages: [
-                    {
-                        role: "system",
-                        content: "Eres experto en cobro de cartera en Colombia. Responde corto y profesional."
-                    },
-                    {
-                        role: "user",
-                        content: prompt
-                    }
+                    { role: "system", content: "Experto en cobro jurídico en Colombia." },
+                    { role: "user", content: prompt }
                 ],
                 temperature: 0.5
             })
@@ -62,31 +47,17 @@ Condiciones:
 
         const data = await response.json();
 
-        console.log("🔥 RESPUESTA GROQ:", JSON.stringify(data, null, 2));
-
-        // VALIDACIÓN
-        if (!data || !data.choices || !data.choices[0]) {
-            return res.json({
-                mensaje: "⚠️ IA no respondió correctamente"
-            });
-        }
-
-        const mensaje = data.choices[0].message.content;
+        const mensaje = data?.choices?.[0]?.message?.content || "Error IA";
 
         res.json({ mensaje });
 
-    } catch (error) {
-        console.error("❌ ERROR IA:", error);
-
-        res.json({
-            mensaje: "⚠️ Error conectando IA"
-        });
+    } catch {
+        res.json({ mensaje: "Error IA" });
     }
 });
 
-// =======================
 const PORT = process.env.PORT || 3000;
 
 app.listen(PORT, () => {
-    console.log("🔥 IA GROQ corriendo en puerto", PORT);
+    console.log("🔥 IA corriendo");
 });
