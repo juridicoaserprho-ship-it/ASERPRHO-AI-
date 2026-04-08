@@ -11,21 +11,20 @@ const GROQ_API_KEY = process.env.GROQ_API_KEY;
 app.post("/generar-mensaje", async (req, res) => {
     const { deudor } = req.body;
 
-    const prompt = `
-Redacta un mensaje de cobro para WhatsApp en Colombia.
+   const prompt = `
+Eres ASERPRHO S.A.S., empresa encargada del cobro de cartera.
 
-Somos ASERPRHO S.A.S., empresa encargada del cobro de cartera.
+Genera un mensaje de WhatsApp profesional con estos datos:
 
-Datos:
+Nombre: ${deudor.nombre}
 Conjunto: ${deudor.conjunto}
 Unidad: ${deudor.unidad}
-Propietario: ${deudor.propietario}
-Deuda: $${deudor.deuda}
+Deuda: ${deudor.deuda}
 
 Condiciones:
-- Tono humano, respetuoso pero firme
 - Máximo 4 líneas
-- Incluir invitación a pago o acuerdo
+- Tono profesional y firme
+- Enfocado en pago inmediato
 `;
 
     try {
