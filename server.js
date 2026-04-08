@@ -5,22 +5,38 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-const GROK_API_KEY = process.env.GROK_API_KEY;
+// 🔐 API KEY DESDE RENDER
+const GROQ_API_KEY = process.env.GROQ_API_KEY;
 
+// =======================
+// ENDPOINT IA (GROQ)
 // =======================
 app.post("/generar-mensaje", async (req, res) => {
     const { deudor } = req.body;
 
-    try {
+    const prompt = `
+Genera mensaje de cobro para WhatsApp:
 
-        const response = await fetch("https://api.x.ai/v1/chat/completions", {
+Unidad: ${deudor.unidad}
+Deuda: $${deudor.deuda}
+Estado: ${deudor.estado}
+
+Condiciones:
+- Máximo 4 líneas
+- Profesional
+- Persuasivo
+- Enfocado en pago
+`;
+
+    try {
+        const response = await fetch("https://api.groq.com/openai/v1/chat/completions", {
             method: "POST",
             headers: {
-                "Authorization": `Bearer ${GROK_API_KEY}`,
+                "Authorization": `Bearer ${GROQ_API_KEY}`,
                 "Content-Type": "application/json"
             },
             body: JSON.stringify({
-                model: "grok-2-latest", // 🔥 seguro
+                model: "llama-3.3-70b-versatile", // 🔥 TU MODELO
                 messages: [
                     {
                         role: "system",
@@ -28,7 +44,7 @@ app.post("/generar-mensaje", async (req, res) => {
                     },
                     {
                         role: "user",
-                        content: `Unidad: ${deudor.unidad}, Deuda: ${deudor.deuda}, Estado: ${deudor.estado}. Genera mensaje de cobro corto para WhatsApp.`
+                        content: prompt
                     }
                 ],
                 temperature: 0.5
@@ -37,9 +53,9 @@ app.post("/generar-mensaje", async (req, res) => {
 
         const data = await response.json();
 
-        console.log("🔍 RESPUESTA GROK:", JSON.stringify(data, null, 2));
+        console.log("🔥 RESPUESTA GROQ:", JSON.stringify(data, null, 2));
 
-        // 🔥 VALIDACIÓN FUERTE
+        // VALIDACIÓN
         if (!data || !data.choices || !data.choices[0]) {
             return res.json({
                 mensaje: "⚠️ IA no respondió correctamente"
@@ -51,7 +67,7 @@ app.post("/generar-mensaje", async (req, res) => {
         res.json({ mensaje });
 
     } catch (error) {
-        console.error("❌ ERROR SERVIDOR:", error);
+        console.error("❌ ERROR IA:", error);
 
         res.json({
             mensaje: "⚠️ Error conectando IA"
@@ -63,5 +79,5 @@ app.post("/generar-mensaje", async (req, res) => {
 const PORT = process.env.PORT || 3000;
 
 app.listen(PORT, () => {
-    console.log("🔥 IA corriendo");
+    console.log("🔥 IA GROQ corriendo");
 });
