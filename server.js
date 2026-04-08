@@ -12,21 +12,38 @@ app.post("/generar-mensaje", async (req, res) => {
     const { deudor } = req.body;
 
    const prompt = `
-Eres ASERPRHO S.A.S., empresa encargada del cobro de cartera.
+Eres ASERPRHO S.A.S., empresa encargada del cobro de cartera en Colombia.
 
-Genera un mensaje de WhatsApp profesional con estos datos:
-
+Datos:
 Nombre: ${deudor.nombre}
 Conjunto: ${deudor.conjunto}
 Unidad: ${deudor.unidad}
 Deuda: ${deudor.deuda}
+Estado: ${deudor.estado}
 
-Condiciones:
+INSTRUCCIONES SEGÚN ESTADO:
+
+- GESTION:
+Mensaje amable recordando la deuda.
+
+- ACUERDO:
+Mensaje conciliador recordando cumplimiento del acuerdo.
+
+- ACUERDO_INCUMPLIDO:
+Mensaje firme indicando incumplimiento y urgencia de pago.
+
+- DEMANDADO:
+Mensaje jurídico fuerte, advirtiendo proceso legal.
+
+- DEMANDADO_GESTION:
+Mensaje firme pero dando última oportunidad de pago.
+
+CONDICIONES:
 - Máximo 4 líneas
-- Tono profesional y firme
+- Profesional
+- Persuasivo
 - Enfocado en pago inmediato
 `;
-
     try {
         const response = await fetch("https://api.groq.com/openai/v1/chat/completions", {
             method: "POST",
